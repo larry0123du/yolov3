@@ -515,7 +515,7 @@ def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10)
 
 def convert_images2bmp():
     # cv2.imread() jpg at 230 img/s, *.bmp at 400 img/s
-    for path in ['../coco/images/val2014/', '../coco/images/train2014/']:
+    for path in ['./coco/images/val2014/', './coco/images/train2014/']:
         folder = os.sep + Path(path).name
         output = path.replace(folder, folder + 'bmp')
         if os.path.exists(output):
@@ -526,7 +526,7 @@ def convert_images2bmp():
             save_name = f.replace('.jpg', '.bmp').replace(folder, folder + 'bmp')
             cv2.imwrite(save_name, cv2.imread(f))
 
-    for label_path in ['../coco/trainvalno5k.txt', '../coco/5k.txt']:
+    for label_path in ['./coco/trainvalno5k.txt', './coco/5k.txt']:
         with open(label_path, 'r') as file:
             lines = file.read()
         lines = lines.replace('2014/', '2014bmp/').replace('.jpg', '.bmp').replace(

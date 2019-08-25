@@ -1,1 +1,1 @@
-../coco/images/val2014/COCO_val2014_000000581886.jpg
+/Users/ray/WorkSpace2019Q3/yolov3/data/coco/images/val2014/COCO_val2014_000000581886.jpg
