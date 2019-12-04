@@ -105,14 +105,15 @@ def weights_init_normal(m):
         torch.nn.init.constant_(m.bias.data, 0.0)
 
 
-def xyxy2xywh(x):
+def xyxy2xywh(xyxy):
     # Convert bounding box format from [x1, y1, x2, y2] to [x, y, w, h]
-    y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)
-    y[:, 0] = (x[:, 0] + x[:, 2]) / 2
-    y[:, 1] = (x[:, 1] + x[:, 3]) / 2
-    y[:, 2] = x[:, 2] - x[:, 0]
-    y[:, 3] = x[:, 3] - x[:, 1]
-    return y
+    # input is a numpy 2d array of shape (number_targets x 4)
+    xywh = torch.zeros_like(xyxy) if isinstance(xyxy, torch.Tensor) else np.zeros_like(xyxy)
+    xywh[:, 0] = (xyxy[:, 0] + xyxy[:, 2]) / 2
+    xywh[:, 1] = (xyxy[:, 1] + xyxy[:, 3]) / 2
+    xywh[:, 2] = xyxy[:, 2] - xyxy[:, 0]
+    xywh[:, 3] = xyxy[:, 3] - xyxy[:, 1]
+    return xywh
 
 
 def xywh2xyxy(x):
