@@ -72,3 +72,37 @@ def test_xyxy2xywh_np_nonzero():
     assert xywh.shape[0] == 1 and xywh.shape[1] == 4
     target = np.array([[0.2, 0.3, 0.2, 0.2]], dtype = np.float32)
     assert np.allclose(xywh, target)
+
+
+########################## tests for xywh2xyxy ##########################
+def test_xywh2xyxy_np_nonzero():
+    # GIVEN
+    xywh = np.array([[0.2, 0.3, 0.2, 0.2]], dtype=np.float32)
+
+    # WHEN
+    xyxy = xywh2xyxy(xywh)
+
+    # THEN
+    assert xyxy.shape[0] == 1 and xyxy.shape[1] == 4
+    target = np.array([[0.1, 0.2, 0.3, 0.4]], dtype = np.float32)
+    assert np.allclose(xyxy, target)
+
+########################## tests for wh_iou ##########################
+def test_wh_iou():
+    # GIVEN
+    anchor = torch.FloatTensor([1,2])
+    targets = torch.FloatTensor(
+        [
+            [1,2],
+            [3,4],
+            [2,1]
+        ]
+    )
+
+    # WHEN
+    ious = wh_iou(anchor, targets)
+
+    # THEN
+    assert ious.shape[0] == targets.shape[0]
+    target = torch.FloatTensor([1, 0.1666667, 0.333334])
+    assert ious.allclose(target)

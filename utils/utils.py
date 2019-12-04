@@ -105,9 +105,17 @@ def weights_init_normal(m):
         torch.nn.init.constant_(m.bias.data, 0.0)
 
 
-def xyxy2xywh(xyxy):
-    # Convert bounding box format from [x1, y1, x2, y2] to [x, y, w, h]
-    # input is a numpy 2d array of shape (number_targets x 4)
+def xyxy2xywh(xyxy: np.ndarray) -> np.ndarray:
+    """
+    converts an ndarray representing in (top_left_x, top_left_y, bottom_right_x, bottom_right_y) format
+    to an ndarray representing in (centroid_x, centroid_y, width, height) format
+
+    Args:
+        xyxy (numpy.ndarray) : A shape-(N, 4) array
+
+    Returns:
+        (numpy.ndarray) : A shape-(N, 4) array
+    """
     xywh = torch.zeros_like(xyxy) if isinstance(xyxy, torch.Tensor) else np.zeros_like(xyxy)
     xywh[:, 0] = (xyxy[:, 0] + xyxy[:, 2]) / 2
     xywh[:, 1] = (xyxy[:, 1] + xyxy[:, 3]) / 2
@@ -116,14 +124,23 @@ def xyxy2xywh(xyxy):
     return xywh
 
 
-def xywh2xyxy(x):
-    # Convert bounding box format from [x, y, w, h] to [x1, y1, x2, y2]
-    y = torch.zeros_like(x) if isinstance(x, torch.Tensor) else np.zeros_like(x)
-    y[:, 0] = x[:, 0] - x[:, 2] / 2
-    y[:, 1] = x[:, 1] - x[:, 3] / 2
-    y[:, 2] = x[:, 0] + x[:, 2] / 2
-    y[:, 3] = x[:, 1] + x[:, 3] / 2
-    return y
+def xywh2xyxy(xywh: np.ndarray) -> np.ndarray:
+    """
+    converts an ndarray representing in (centroid_x, centroid_y, width, height) format
+    to an ndarray representing in (top_left_x, top_left_y, bottom_right_x, bottom_right_y) format
+
+    Args:
+        xywh (numpy.ndarray) : A shape-(N, 4) array
+
+    Returns:
+        (numpy.ndarray) : A shape-(N, 4) array
+    """
+    xyxy = torch.zeros_like(xywh) if isinstance(xywh, torch.Tensor) else np.zeros_like(xywh)
+    xyxy[:, 0] = xywh[:, 0] - xywh[:, 2] / 2
+    xyxy[:, 1] = xywh[:, 1] - xywh[:, 3] / 2
+    xyxy[:, 2] = xywh[:, 0] + xywh[:, 2] / 2
+    xyxy[:, 3] = xywh[:, 1] + xywh[:, 3] / 2
+    return xyxy
 
 
 def scale_coords(img1_shape, coords, img0_shape):
@@ -266,19 +283,27 @@ def bbox_iou(box1, box2, x1y1x2y2=True, GIoU=False):
     return iou
 
 
-def wh_iou(box1, box2):
-    # Returns the IoU of wh1 to wh2. wh1 is 2, wh2 is nx2
-    box2 = box2.t()
+def wh_iou(anchor: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+    """
+    Compute the iou of the anchor against each of the targets
+    This is basically calculating how similar each target is to the anchor
 
-    # w, h = box1
-    w1, h1 = box1[0], box1[1]
-    w2, h2 = box2[0], box2[1]
+    Args:
+        anchor (torch.Tensor) : A shape-(2) torch.Tensor containing width and height of the anchor (unnormalized, unit=grid)
+        targets (torch.Tensor) : A shape-(n_targets, 2) torch.Tensor containing width and height of the targets (unnormalized, unit=grid)
+    Returns:
+        (torch.Tensor) : A shape-(n_targets) torch.Tensor containing the iou's
+    """
+    targets = targets.t()   # (n_targets, 2) -> (2, n_targets)
+
+    w_anchor, h_anchor = anchor[0], anchor[1]
+    w_targets, h_targets = targets[0], targets[1]
 
     # Intersection area
-    inter_area = torch.min(w1, w2) * torch.min(h1, h2)
+    inter_area = torch.min(w_anchor, w_targets) * torch.min(h_anchor, h_targets)
 
     # Union Area
-    union_area = (w1 * h1 + 1e-16) + w2 * h2 - inter_area
+    union_area = (w_anchor * h_anchor + 1e-16) + w_targets * h_targets - inter_area
 
     return inter_area / union_area  # iou
 
